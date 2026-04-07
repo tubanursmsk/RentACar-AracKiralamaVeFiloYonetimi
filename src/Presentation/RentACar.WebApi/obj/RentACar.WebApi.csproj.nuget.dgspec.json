@@ -53,6 +53,12 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
+          "dependencies": {
+            "AutoMapper": {
+              "target": "Package",
+              "version": "[13.0.1, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -254,6 +260,9 @@
               "C:\\Users\\PC\\Documents\\RentACar\\src\\Core\\RentACar.Application\\RentACar.Application.csproj": {
                 "projectPath": "C:\\Users\\PC\\Documents\\RentACar\\src\\Core\\RentACar.Application\\RentACar.Application.csproj"
               },
+              "C:\\Users\\PC\\Documents\\RentACar\\src\\Core\\RentACar.Domain\\RentACar.Domain.csproj": {
+                "projectPath": "C:\\Users\\PC\\Documents\\RentACar\\src\\Core\\RentACar.Domain\\RentACar.Domain.csproj"
+              },
               "C:\\Users\\PC\\Documents\\RentACar\\src\\Infrastructure\\RentACar.Infrastructure\\RentACar.Infrastructure.csproj": {
                 "projectPath": "C:\\Users\\PC\\Documents\\RentACar\\src\\Infrastructure\\RentACar.Infrastructure\\RentACar.Infrastructure.csproj"
               }
@@ -284,7 +293,7 @@
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
               "target": "Package",
-              "version": "[9.0.10, )"
+              "version": "[9.0.0, )"
             }
           },
           "imports": [
