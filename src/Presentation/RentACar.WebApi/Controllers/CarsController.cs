@@ -61,5 +61,21 @@ namespace RentACar.WebApi.Controllers
             // null yerine new { } kullanıyoruz
             return Ok(ApiResponse<object>.SuccessResult(new { }, "Araç başarıyla silindi (Soft Delete)."));
         }
+
+        // POST api/Cars/available
+        // Neden GET değil de POST? Çünkü karmaşık arama filtrelerini URL'de (QueryString) 
+        // taşımak yerine Request Body'de taşımak daha güvenli ve genişletilebilirdir.
+        [HttpPost("available")]
+        public async Task<ActionResult<ApiResponse<PaginatedResult<CarDto>>>> GetAvailableCars([FromBody] AvailableCarSearchDto searchDto)
+        {
+            var result = await _carService.GetAvailableCarsAsync(searchDto);
+            
+            if (result.TotalCount == 0)
+            {
+                return Ok(ApiResponse<PaginatedResult<CarDto>>.SuccessResult(result, "Belirtilen kriterlere uygun araç bulunamadı."));
+            }
+
+            return Ok(ApiResponse<PaginatedResult<CarDto>>.SuccessResult(result, $"{result.TotalCount} adet uygun araç listelendi."));
+        }
     }
 }

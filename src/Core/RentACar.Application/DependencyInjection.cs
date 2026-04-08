@@ -9,11 +9,12 @@ namespace RentACar.Application
     {
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
-            // AutoMapper'ı kaydet
+            // AutoMapper ayarları
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
-            // Servisleri kaydet
+            // Servisler
             services.AddScoped<ICarService, CarService>();
+            services.AddScoped<IRentalService, RentalService>();
 
             return services;
         }
