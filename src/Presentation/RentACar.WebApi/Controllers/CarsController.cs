@@ -50,14 +50,16 @@ namespace RentACar.WebApi.Controllers
             }
 
             await _carService.UpdateCarAsync(carUpdateDto);
-            return Ok(ApiResponse<object>.SuccessResult(null, "Araç bilgileri başarıyla güncellendi."));
+            // null yerine new { } kullanıyoruz
+            return Ok(ApiResponse<object>.SuccessResult(new { }, "Araç bilgileri başarıyla güncellendi."));
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult<ApiResponse<object>>> Delete(int id)
         {
             await _carService.DeleteCarAsync(id);
-            return Ok(ApiResponse<object>.SuccessResult(null, "Araç başarıyla silindi (Soft Delete)."));
+            // null yerine new { } kullanıyoruz
+            return Ok(ApiResponse<object>.SuccessResult(new { }, "Araç başarıyla silindi (Soft Delete)."));
         }
     }
 }
