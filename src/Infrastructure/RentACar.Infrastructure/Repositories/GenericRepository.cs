@@ -24,15 +24,36 @@ namespace RentACar.Infrastructure.Repositories
         }
 
         public async Task<T?> GetByIdAsync(int id) => await _dbSet.FindAsync(id);
-        
-        public async Task<IReadOnlyList<T>> GetAllAsync() => await _dbSet.Where(x => !x.IsDeleted).ToListAsync();
-        
-        public async Task<IReadOnlyList<T>> FindAsync(Expression<Func<T, bool>> predicate) => await _dbSet.Where(predicate).Where(x => !x.IsDeleted).ToListAsync();
-        
+
+      
+        public async Task<IReadOnlyList<T>> GetAllAsync(params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet.Where(x => !x.IsDeleted);
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+            return await query.ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<T>> FindAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet.Where(predicate).Where(x => !x.IsDeleted);
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+            return await query.ToListAsync();
+        }
         public async Task AddAsync(T entity) => await _dbSet.AddAsync(entity);
-        
         public void Update(T entity) => _dbSet.Update(entity);
-        
+
         public void Delete(T entity)
         {
             // Soft delete mantığı

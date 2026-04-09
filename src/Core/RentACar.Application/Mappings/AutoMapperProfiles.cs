@@ -2,6 +2,8 @@ using AutoMapper;
 using RentACar.Domain.Entities;
 using RentACar.Application.DTOs.Car;
 using RentACar.Application.DTOs.Rental;
+using RentACar.Application.DTOs.Customer;
+
 
 namespace RentACar.Application.Mappings
 {
@@ -17,6 +19,13 @@ namespace RentACar.Application.Mappings
             // Rental map ayarları
             CreateMap<Rental, RentalDto>().ReverseMap();
             CreateMap<Rental, RentalCreateDto>().ReverseMap();
+
+            // Customer map ayarları
+            CreateMap<Customer, CustomerDto>().ReverseMap();
+            CreateMap<Customer, CustomerCreateDto>().ReverseMap();
+            CreateMap<Customer, CustomerUpdateDto>().ReverseMap();
+            
+
             
         }
     }

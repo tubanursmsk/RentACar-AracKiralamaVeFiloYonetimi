@@ -20,13 +20,16 @@ namespace RentACar.Application.Services
 
         public async Task<IReadOnlyList<CarDto>> GetAllCarsAsync()
         {
-            var cars = await _unitOfWork.Cars.GetAllAsync();
+            var cars = await _unitOfWork.Cars.GetAllAsync(c => c.Brand, c => c.CurrentLocation);
             return _mapper.Map<IReadOnlyList<CarDto>>(cars);
         }
 
         public async Task<CarDto?> GetCarByIdAsync(int id)
         {
-            var car = await _unitOfWork.Cars.GetByIdAsync(id);
+            // GetById yerine FindAsync kullanıp Include veriyoruz
+            var cars = await _unitOfWork.Cars.FindAsync(c => c.Id == id, c => c.Brand, c => c.CurrentLocation);
+            var car = cars.FirstOrDefault();
+
             return _mapper.Map<CarDto>(car);
         }
 
@@ -34,12 +37,16 @@ namespace RentACar.Application.Services
         {
             var car = _mapper.Map<Car>(carCreateDto);
             // Varsayılan olarak eklenen araç müsait statüde olur
-            car.Status = CarStatus.Available; 
+            car.Status = CarStatus.Available;
 
             await _unitOfWork.Cars.AddAsync(car);
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<CarDto>(car);
+            // EKLENEN KISIM: Araç veritabanına kaydedildikten sonra, Id'si oluşur. 
+            // İsimlerin DTO'ya dolu gitmesi için aracı ilişkileriyle beraber DB'den tekrar çekiyoruz.
+            var createdCar = (await _unitOfWork.Cars.FindAsync(c => c.Id == car.Id, c => c.Brand, c => c.CurrentLocation)).FirstOrDefault();
+
+            return _mapper.Map<CarDto>(createdCar ?? car);
         }
 
         public async Task UpdateCarAsync(CarUpdateDto carUpdateDto)
@@ -63,11 +70,11 @@ namespace RentACar.Application.Services
             }
         }
 
-         /*
-         💡 Mülakat İpucu: Eğer sana "Tarihlerin çakışıp çakışmadığını nasıl anlarsın?" diye sorarlarsa
-            şu formülü söyle: (StartA < EndB) && (EndA > StartB). Bu, dünyadaki tüm rezervasyon sistemlerinin
-            (Otel, Uçak, Araç) temel kesişim formülüdür. Uzun uzun if/else yazmaktan kurtarır.
-         */
+        /*
+        💡 Mülakat İpucu: Eğer sana "Tarihlerin çakışıp çakışmadığını nasıl anlarsın?" diye sorarlarsa
+           şu formülü söyle: (StartA < EndB) && (EndA > StartB). Bu, dünyadaki tüm rezervasyon sistemlerinin
+           (Otel, Uçak, Araç) temel kesişim formülüdür. Uzun uzun if/else yazmaktan kurtarır.
+        */
         public async Task<PaginatedResult<CarDto>> GetAvailableCarsAsync(AvailableCarSearchDto searchDto)
         {
             // 1. KURAL: Tarih doğrulama
@@ -77,29 +84,27 @@ namespace RentACar.Application.Services
             if (searchDto.PickUpDate < DateTime.Now.Date)
                 throw new ArgumentException("Geçmiş bir tarihe rezervasyon yapılamaz.");
 
-            // 2. KURAL (MÜLAKAT KURTARAN ALGORİTMA): Tarih Kesişimi (Overlap) Kontrolü
-            // Seçilen tarihlerde 'İptal Edilmemiş' ve 'Tamamlanmamış' olan tüm rezervasyonları bul.
-            // Formül: (Mevcut_Başlangıç < İstenen_Bitiş) VE (Mevcut_Bitiş > İstenen_Başlangıç)
-            var overlappingRentals = await _unitOfWork.Rentals.FindAsync(r => 
-                r.RentStartDate < searchDto.DropOffDate && 
+            var overlappingRentals = await _unitOfWork.Rentals.FindAsync(r =>
+                r.RentStartDate < searchDto.DropOffDate &&
                 r.RentEndDate > searchDto.PickUpDate &&
-                r.Status != ReservationStatus.Cancelled && 
+                r.Status != ReservationStatus.Cancelled &&
                 r.Status != ReservationStatus.Completed);
 
-            // Bu tarihlerde dolu olan (kesişen) araçların ID'lerini bir listeye alalım
             var bookedCarIds = overlappingRentals.Select(r => r.CarId).Distinct().ToList();
 
             // 3. KURAL: Lokasyon ve Uygunluk Filtresi
-            // Aradığımız araç: Doğru şubede olmalı, durumu Pasif/Bakımda olmamalı ve bookedCarIds listesinde OLMAMALI.
-            var suitableCars = await _unitOfWork.Cars.FindAsync(c => 
+            // DEĞİŞEN KISIM: c => c.Brand ve c => c.CurrentLocation dahil edildi
+            var suitableCars = await _unitOfWork.Cars.FindAsync(c =>
                 c.CurrentLocationId == searchDto.PickUpLocationId &&
                 c.Status != CarStatus.Passive &&
                 c.Status != CarStatus.InMaintenance &&
-                !bookedCarIds.Contains(c.Id)); // Dolu araçları eledik!
+                !bookedCarIds.Contains(c.Id),
+                c => c.Brand,
+                c => c.CurrentLocation);
 
             // 4. KURAL: Sayfalama (Pagination)
             var totalCount = suitableCars.Count;
-            
+
             var pagedCars = suitableCars
                 .Skip((searchDto.PageNumber - 1) * searchDto.PageSize)
                 .Take(searchDto.PageSize)

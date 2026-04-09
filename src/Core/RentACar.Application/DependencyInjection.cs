@@ -15,6 +15,7 @@ namespace RentACar.Application
             // Servisler
             services.AddScoped<ICarService, CarService>();
             services.AddScoped<IRentalService, RentalService>();
+            services.AddScoped<ICustomerService, CustomerService>();
 
             return services;
         }

@@ -77,5 +77,7 @@ namespace RentACar.WebApi.Controllers
 
             return Ok(ApiResponse<PaginatedResult<CarDto>>.SuccessResult(result, $"{result.TotalCount} adet uygun araç listelendi."));
         }
+
+    
     }
 }
