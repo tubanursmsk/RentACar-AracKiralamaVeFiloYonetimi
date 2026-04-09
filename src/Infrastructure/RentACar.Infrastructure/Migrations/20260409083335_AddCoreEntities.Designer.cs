@@ -12,7 +12,7 @@ using RentACar.Infrastructure.Contexts;
 namespace RentACar.Infrastructure.Migrations
 {
     [DbContext(typeof(RentACarDbContext))]
-    [Migration("20260408210323_AddCoreEntities")]
+    [Migration("20260409083335_AddCoreEntities")]
     partial class AddCoreEntities
     {
         /// <inheritdoc />

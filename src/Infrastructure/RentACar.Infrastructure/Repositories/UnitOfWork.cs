@@ -20,10 +20,16 @@ namespace RentACar.Infrastructure.Repositories
             // Generic Repository atamaları
             Cars = new GenericRepository<Car>(_context); // Car tablosu için GenericRepository kullanarak bir repository oluşturuyoruz
             Rentals = new GenericRepository<Rental>(_context);
+            Brands = new GenericRepository<Brand>(_context); 
+            Locations = new GenericRepository<Location>(_context); 
+            Customers = new GenericRepository<Customer>(_context); 
         }
 
-        public IGenericRepository<Car> Cars { get; } // 
+        public IGenericRepository<Car> Cars { get; } 
         public IGenericRepository<Rental> Rentals { get; }
+        public IGenericRepository<Brand> Brands { get; } 
+        public IGenericRepository<Location> Locations { get; } 
+        public IGenericRepository<Customer> Customers { get; } 
 
         public async Task<int> SaveChangesAsync()
         {
