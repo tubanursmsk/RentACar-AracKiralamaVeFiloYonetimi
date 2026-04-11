@@ -5,7 +5,7 @@ namespace RentACar.Application.Interfaces
 {
     public interface ICarService
     {
-        Task<IReadOnlyList<CarDto>> GetAllCarsAsync();
+        Task<PaginatedResult<CarDto>> GetAllCarsAsync(int pageNumber = 1, int pageSize = 10);
         Task<CarDto?> GetCarByIdAsync(int id);
         Task<CarDto> CreateCarAsync(CarCreateDto carCreateDto);
         Task UpdateCarAsync(CarUpdateDto carUpdateDto);

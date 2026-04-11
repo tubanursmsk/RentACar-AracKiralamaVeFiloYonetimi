@@ -10,14 +10,11 @@ namespace RentACar.Domain.Entities
         
         public int PickUpLocationId { get; set; } // Alış Şubesi
         public Location PickUpLocation { get; set; } = null!;
-
         public int DropOffLocationId { get; set; } // Dönüş Şubesi
         public Location DropOffLocation { get; set; } = null!;
-
         public DateTime RentStartDate { get; set; }
         public DateTime RentEndDate { get; set; }
         public DateTime? ReturnDate { get; set; } 
-        
         public decimal TotalAmount { get; set; }
         public bool IsPaid { get; set; }
 

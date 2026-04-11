@@ -39,6 +39,27 @@ namespace RentACar.Infrastructure.Repositories
             return await query.ToListAsync();
         }
 
+        public async Task<(IReadOnlyList<T> Items, int TotalCount)> GetAllPagedAsync(int pageNumber, int pageSize, params Expression<Func<T, object>>[] includes)
+        {
+            IQueryable<T> query = _dbSet.Where(x => !x.IsDeleted);
+            
+            if (includes != null)
+            {
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
+            }
+
+            // Önce filtrelenmiş verinin TOPLAM sayısını alıyoruz (Sayfalama hesabı için gerekli)
+            var totalCount = await query.CountAsync();
+
+            // Sonra Skip ve Take ile SADECE o sayfaya ait verileri SQL'den çekiyoruz
+            var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return (items, totalCount);
+        }
+
         public async Task<IReadOnlyList<T>> FindAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = _dbSet.Where(predicate).Where(x => !x.IsDeleted);

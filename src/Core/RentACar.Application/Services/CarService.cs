@@ -17,11 +17,19 @@ namespace RentACar.Application.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-
-        public async Task<IReadOnlyList<CarDto>> GetAllCarsAsync()
+        
+        public async Task<PaginatedResult<CarDto>> GetAllCarsAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var cars = await _unitOfWork.Cars.GetAllAsync(c => c.Brand, c => c.CurrentLocation);
-            return _mapper.Map<IReadOnlyList<CarDto>>(cars);
+            // Yeni yazdığımız repository metodunu çağırıyoruz
+            var (items, totalCount) = await _unitOfWork.Cars.GetAllPagedAsync(pageNumber, pageSize, c => c.Brand, c => c.CurrentLocation);
+
+            return new PaginatedResult<CarDto>
+            {
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Items = _mapper.Map<IReadOnlyList<CarDto>>(items)
+            };
         }
 
         public async Task<CarDto?> GetCarByIdAsync(int id)

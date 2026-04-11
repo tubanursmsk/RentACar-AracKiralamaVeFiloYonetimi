@@ -5,7 +5,6 @@ namespace RentACar.Application.DTOs.Responses
         public T? Data { get; set; }
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
-        public List<string>? Errors { get; set; }
 
         // Başarılı işlemler için pratik metotlar
         public static ApiResponse<T> SuccessResult(T data, string message = "İşlem başarılı.")
@@ -14,9 +13,9 @@ namespace RentACar.Application.DTOs.Responses
         }
 
         // Hatalı işlemler için pratik metotlar
-        public static ApiResponse<T> ErrorResult(string message, List<string>? errors = null)
+        public static ApiResponse<T> ErrorResult(string message)
         {
-            return new ApiResponse<T> { Success = false, Message = message, Errors = errors };
+            return new ApiResponse<T> { Success = false, Message = message  };
         }
     }
 }

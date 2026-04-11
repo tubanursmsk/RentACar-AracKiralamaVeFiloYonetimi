@@ -1,3 +1,4 @@
+using ECommerce.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using RentACar.Domain.Entities;
 
@@ -16,6 +17,8 @@ namespace RentACar.Infrastructure.Contexts
         public DbSet<Location> Locations { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<AdditionalService> AdditionalServices { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Company> Companies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -3,6 +3,7 @@ namespace RentACar.Application.DTOs.Customer
     public class CustomerCreateDto
     {
         public int UserId { get; set; } 
+        
         public string IdentityNumber { get; set; } = string.Empty;
         public string PhoneNumber { get; set; } = string.Empty;
         public DateTime DateOfBirth { get; set; }

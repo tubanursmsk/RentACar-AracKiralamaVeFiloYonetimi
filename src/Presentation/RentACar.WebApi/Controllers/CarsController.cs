@@ -17,10 +17,11 @@ namespace RentACar.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<IReadOnlyList<CarDto>>>> GetAll()
+        // [FromQuery] ile Swagger'da parametre girebilme alanı açılır.
+        public async Task<ActionResult<ApiResponse<PaginatedResult<CarDto>>>> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var cars = await _carService.GetAllCarsAsync();
-            return Ok(ApiResponse<IReadOnlyList<CarDto>>.SuccessResult(cars));
+            var result = await _carService.GetAllCarsAsync(pageNumber, pageSize);
+            return Ok(ApiResponse<PaginatedResult<CarDto>>.SuccessResult(result));
         }
 
         [HttpGet("{id}")]
@@ -69,7 +70,7 @@ namespace RentACar.WebApi.Controllers
         public async Task<ActionResult<ApiResponse<PaginatedResult<CarDto>>>> GetAvailableCars([FromBody] AvailableCarSearchDto searchDto)
         {
             var result = await _carService.GetAvailableCarsAsync(searchDto);
-            
+
             if (result.TotalCount == 0)
             {
                 return Ok(ApiResponse<PaginatedResult<CarDto>>.SuccessResult(result, "Belirtilen kriterlere uygun araç bulunamadı."));
@@ -78,6 +79,6 @@ namespace RentACar.WebApi.Controllers
             return Ok(ApiResponse<PaginatedResult<CarDto>>.SuccessResult(result, $"{result.TotalCount} adet uygun araç listelendi."));
         }
 
-    
+
     }
 }

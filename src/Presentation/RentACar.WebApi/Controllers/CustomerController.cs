@@ -17,10 +17,11 @@ namespace RentACar.WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllCustomers()
+        public async Task<IActionResult> GetAllCustomers([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var customers = await _customerService.GetAllCustomersAsync();
-            return Ok(new ApiResponse<IReadOnlyList<CustomerDto>> { Data = customers, Success = true });
+            var result = await _customerService.GetAllCustomersAsync(pageNumber, pageSize);
+            // Standart ApiResponse formatına uygun dönüş
+            return Ok(new ApiResponse<PaginatedResult<CustomerDto>> { Data = result, Success = true });
         }
 
         [HttpPost]

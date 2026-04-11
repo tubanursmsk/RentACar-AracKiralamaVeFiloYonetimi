@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text.Json;
-using RentACar.Application.DTOs.Responses;
 
 namespace RentACar.WebApi.Middleware
 {
@@ -24,28 +23,43 @@ namespace RentACar.WebApi.Middleware
             }
             catch (Exception ex)
             {
-                // Hata oluşursa logla ve yakala
-                _logger.LogError(ex, "Sistemde beklenmeyen bir hata oluştu: {Message}", ex.Message);
+                // Hata oluşursa yakala ve özel metoda gönder
                 await HandleExceptionAsync(context, ex);
             }
         }
 
-        private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            // Inner exception (iç hata) varsa onun mesajını al, yoksa normal hata mesajını al
+            string message = exception.InnerException?.Message ?? exception.Message;
 
-            // Standart ApiResponse formatında hata mesajı döndürüyoruz
-            var response = ApiResponse<object>.ErrorResult(
-                "Sunucu tarafında beklenmeyen bir hata oluştu.",
-                new List<string> { exception.Message } // İstersen canlı ortamda exception.Message'ı gizleyebilirsin
+            // E-ticaret projesindeki gibi detaylı loglama
+            _logger.LogError(
+                exception,
+                "Unhandled exception: {Message} | Path: {Path} | IP: {IP} | Agent: {Agent} | Type: {Type}",
+                message,
+                context.Request.Path,
+                context.Connection.RemoteIpAddress?.ToString(),
+                context.Request.Headers["User-Agent"].ToString(),
+                exception.GetType().ToString()
             );
 
-            // Json isimlendirme standartlarını (camelCase) korumak için opsiyon ekliyoruz
-            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            var json = JsonSerializer.Serialize(response, options);
+            // E-ticaret standartı: Hatalar 400 Bad Request olarak döner
+            var statusCode = StatusCodes.Status400BadRequest;
             
-            return context.Response.WriteAsync(json);
+            // E-ticaret standartındaki anonim nesne (error, code, timestamp)
+            var response = new
+            {
+                error = message, // Doğrudan Entity Framework'ün veya senin fırlattığın net mesaj
+                code = statusCode,
+                timestamp = DateTime.UtcNow
+            };
+
+            var payload = JsonSerializer.Serialize(response);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = statusCode;
+            
+            await context.Response.WriteAsync(payload);
         }
     }
 }

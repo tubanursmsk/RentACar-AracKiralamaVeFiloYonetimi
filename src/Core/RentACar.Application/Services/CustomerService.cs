@@ -1,5 +1,6 @@
 using AutoMapper;
 using RentACar.Application.DTOs.Customer;
+using RentACar.Application.DTOs.Responses;
 using RentACar.Application.Interfaces;
 using RentACar.Domain.Entities;
 using RentACar.Domain.Interfaces;
@@ -17,12 +18,18 @@ namespace RentACar.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<IReadOnlyList<CustomerDto>> GetAllCustomersAsync()
+        // CustomerService.cs içindeki GetAllCustomersAsync metodunu şu şekilde güncelle:
+        public async Task<PaginatedResult<CustomerDto>> GetAllCustomersAsync(int pageNumber = 1, int pageSize = 10)
         {
-            // Eğer IUnitOfWork içinde Customers tanımı yoksa, IUnitOfWork.cs içine: 
-            // IGenericRepository<Customer> Customers { get; } eklemeyi unutma!
-            var customers = await _unitOfWork.Customers.GetAllAsync();
-            return _mapper.Map<IReadOnlyList<CustomerDto>>(customers);
+            var (items, totalCount) = await _unitOfWork.Customers.GetAllPagedAsync(pageNumber, pageSize);
+
+            return new PaginatedResult<CustomerDto>
+            {
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                Items = _mapper.Map<IReadOnlyList<CustomerDto>>(items)
+            };
         }
 
         public async Task<CustomerDto?> GetCustomerByIdAsync(int id)
@@ -34,7 +41,7 @@ namespace RentACar.Application.Services
         public async Task<CustomerDto> CreateCustomerAsync(CustomerCreateDto customerCreateDto)
         {
             var customer = _mapper.Map<Customer>(customerCreateDto);
-            
+
             await _unitOfWork.Customers.AddAsync(customer);
             await _unitOfWork.SaveChangesAsync();
 
